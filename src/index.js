@@ -15,6 +15,35 @@ const isEditArea = _container => {
   return (_container.className === 'edit-area') ? true : isEditArea(_container.parentNode)
 }
 
+const setStyles = element => {
+  const elementStyles = window.getComputedStyle(element);
+  ['fontSize', 'fontWeight', 'fontStyle', 'lineHeight'].forEach(style => {
+    const { className } = element
+
+    // написать два слова, одно слово выделить в bold/italic, потом оба в H1
+    if (style === 'fontSize' && className !== 'header1-text' && className !== 'header2-text') return
+
+    // написать два слова, одно слово выделить в bold/H1, потом оба в italic
+    if (style === 'fontStyle' && element.className !== 'italic-text') return
+
+    if (style === 'fontWeight') {
+      // написать два слова, одно слово выделить в italic, потом оба в bold
+      if (element.className === 'italic-text') return
+
+      // написать два слова, одно слово выделить в H1, потом оба в bold
+      if (element.className === 'bold-text') {
+        element.childNodes.forEach(node => {
+          if (['H1', 'H2'].includes(node.nodeName)) {
+            node.style[style] = elementStyles[style]
+          }
+        })
+      }
+    }
+
+    element.style[style] = elementStyles[style]
+  })
+}
+
 const formating = (btnName) => {
   const selection = _getSelection()
   if (!selection) return
@@ -26,15 +55,11 @@ const formating = (btnName) => {
   element.classList.add(btnName)
 
   const content = range.cloneContents().cloneNode(true)
-  console.log({ element })
   element.append(content)
   range.deleteContents()
   range.insertNode(element)
 
-  const elementStyles = window.getComputedStyle(element);
-  ['fontSize', 'fontWeight', 'fontStyle', 'lineHeight'].forEach(style => {
-    element.style[style] = elementStyles[style]
-  })
+  setStyles(element)
 }
 
 btnsArr.forEach(button => {
